@@ -27,6 +27,8 @@ Modern software delivery requires continuous security assurance. The reference p
 ## Usage
 
 Fork or clone this repository and adapt the workflow YAML files to your project’s needs. Ensure secrets for container registry and signing keys are configured in your repository settings.
+To run the smoke tests locally, execute `pytest` from the repository root.
+
 
 ## Contributing
 
