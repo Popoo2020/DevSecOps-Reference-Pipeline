@@ -1,61 +1,85 @@
-# DevSecOps‑Reference‑Pipeline
+# DevSecOps-Reference-Pipeline
 
-[![CI](https://github.com/your-org/DevSecOps-Reference-Pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/DevSecOps-Reference-Pipeline/actions/workflows/ci.yml)
+[![Secure CI](https://github.com/Popoo2020/DevSecOps-Reference-Pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/Popoo2020/DevSecOps-Reference-Pipeline/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-The **DevSecOps‑Reference‑Pipeline** demonstrates how to integrate security
-controls into your continuous integration (CI) process.  It is designed as a
-starting point for teams looking to embed linting, unit tests, secret
-scanning, dependency scanning and other checks into their build pipeline in a
-way that is both repeatable and adaptable.
+**DevSecOps-Reference-Pipeline** is a practical GitHub Actions reference pipeline for integrating security and quality checks into a repeatable CI workflow.  
+It is designed as a recruiter-friendly and engineer-friendly example of how lightweight controls can be embedded directly into development workflows without pretending to be a full enterprise platform.
 
-## Features
+> **Status:** working reference pipeline / active expansion.
 
-* **Static analysis (SAST)** – Leverages tools such as `semgrep` and `bandit`
-  (planned) to identify insecure coding patterns in your source code.
-* **Dependency scanning** – Uses `osv‑scanner`/`pip‑audit` to check for
-  vulnerabilities in third‑party libraries and `gitleaks` to detect secrets
-  accidentally committed to the repository.
-* **Unit testing** – Executes your Python test suite via `pytest` to catch
-  regressions early and verify business logic.
-* **Container and IaC scanning** – Future iterations will integrate
-  `trivy` for container image scanning and `checkov` for infrastructure as
-  code (IaC) linting.
-* **SBOM generation & signed releases** – Planned support for
-  generating CycloneDX software bill of materials (SBOM) and signing
-  artefacts with `cosign`.
+## Implemented checks
 
-## Quickstart
+| Capability | Status |
+|---|---|
+| Repository checkout with full history | ✅ Implemented |
+| Python environment setup | ✅ Implemented |
+| Conditional dependency installation | ✅ Implemented |
+| Ruff linting when Python code exists | ✅ Implemented |
+| Pytest execution when tests exist | ✅ Implemented |
+| Bandit SAST when Python code exists | ✅ Implemented |
+| `pip-audit` dependency review when manifest exists | ✅ Implemented |
+| Gitleaks secret scanning | ✅ Implemented |
+| SBOM generation | 🟡 Planned |
+| Signed releases / provenance | 🟡 Planned |
+| Container and IaC scanning | 🟡 Planned |
 
-1. Fork or clone this repository and adjust the workflow under
-   `.github/workflows/ci.yml` to suit your project’s language and tooling.
-2. Ensure your project dependencies are defined in `requirements.txt` or
-   equivalent so the pipeline can install and scan them.
-3. Commit and push changes to trigger the GitHub Actions pipeline.  Review
-   the results of linting, testing and scanning in the Actions tab.
+## Why this matters
 
-## Customisation
+The repository demonstrates a security-first CI pattern that:
 
-You can extend this pipeline by editing `.github/workflows/ci.yml` and
-installing additional tools.  For example, to add SAST scanning with
-`bandit`, insert a step that runs `bandit -r src/` and fail the build on
-critical findings.  Similarly, container scanning can be added by running
-`trivy image` against your built container.
+- avoids false confidence from `pytest || true`
+- runs meaningful checks when applicable
+- skips irrelevant checks transparently when a matching codebase or manifest is absent
+- provides a clear foundation for supply-chain security controls
+- is intentionally understandable for teams adopting DevSecOps incrementally
 
-## Roadmap
+## Workflow overview
 
-1. Integrate SAST tools (Semgrep/Bandit) into the pipeline.
-2. Add container scanning with `trivy` and IaC scanning with `checkov`.
-3. Generate SBOMs via CycloneDX and sign releases using `cosign`.
-4. Provide a sample vulnerable application to demonstrate pipeline output.
+```text
+Push / Pull Request
+        │
+        ▼
+Checkout + Python setup
+        │
+        ▼
+Install project/tooling dependencies
+        │
+        ├── Ruff lint
+        ├── Pytest
+        ├── Bandit SAST
+        ├── pip-audit
+        └── Gitleaks secret scan
+```
 
-Refer to `CONTRIBUTING.md` for details on contributing enhancements.
+## Example use cases
 
-## Known Limitations
+- educational reference for CI/CD security hygiene
+- starting point for Python-oriented repositories
+- baseline for adding policy gates to proof-of-concept security projects
+- portfolio evidence of practical DevSecOps implementation
 
-This pipeline is provided as a reference and may require significant
-modification to fit your project.  It currently lacks integration with
-static application security testing (SAST) tools, container and IaC
-scanning, SBOM generation and signed releases.  Use the existing workflow
-as a template and customise it to suit your technology stack and risk
-profile.
+## Current limitations
+
+This repository is a **reference implementation**, not a universal CI platform.  It currently focuses on:
+
+- Python-oriented checks
+- secrets detection
+- dependency auditing
+- lightweight static analysis
+
+The following are intentionally left for further expansion:
+
+- SBOM generation
+- release signing
+- container image scanning
+- IaC scanning with tools such as Checkov or Trivy
+- policy-as-code enforcement
+
+## Recommended next steps
+
+1. Add CycloneDX SBOM generation
+2. Add container/IaC scanning examples
+3. Include a small sample vulnerable app so the pipeline output is demonstrable
+4. Publish screenshots or sample workflow outputs
+5. Add branch protection guidance in documentation
