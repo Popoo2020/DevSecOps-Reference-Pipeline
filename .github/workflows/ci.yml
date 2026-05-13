@@ -1,22 +1,71 @@
-name: CI
+name: Secure CI
 
 on:
   push:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
-  build:
+  quality-and-security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install dependencies
+
+      - name: Install analysis tooling
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Run tests
+          python -m pip install --upgrade pip
+          python -m pip install pytest ruff bandit pip-audit
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          fi
+
+      - name: Lint Python code when present
         run: |
-          if [ -d tests ]; then pytest || true; fi
+          PY_FILES=$(find . -type f -name "*.py" -not -path "./.git/*" | wc -l)
+          if [ "$PY_FILES" -gt 0 ]; then
+            ruff check .
+          else
+            echo "No Python files found; skipping ruff lint."
+          fi
+
+      - name: Run unit tests when present
+        run: |
+          if [ -d tests ]; then
+            pytest -q
+          else
+            echo "No tests directory found; skipping pytest."
+          fi
+
+      - name: Run Bandit SAST when Python code exists
+        run: |
+          PY_FILES=$(find . -type f -name "*.py" -not -path "./.git/*" | wc -l)
+          if [ "$PY_FILES" -gt 0 ]; then
+            bandit -r . -ll
+          else
+            echo "No Python files found; skipping Bandit."
+          fi
+
+      - name: Audit Python dependencies when manifest exists
+        run: |
+          if [ -f requirements.txt ]; then
+            pip-audit -r requirements.txt
+          else
+            echo "No requirements.txt found; skipping pip-audit."
+          fi
+
+      - name: Secret scanning with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
